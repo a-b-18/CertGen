@@ -9,18 +9,18 @@ RUN  echo 'user:password' | chpasswd
 RUN service ssh start
 
 # CA Directory Setup
-RUN mkdir /root/ca && cd /root/ca
-RUN mkdir /root/ca/newcerts /root/ca/certs /root/ca/crl /root/ca/private /root/ca/requests && touch /root/ca/index.txt && echo '1234' >> /root/ca/serial
+RUN mkdir /root/ca-root && cd /root/ca-root
+RUN mkdir /root/ca-root/newcerts /root/ca-root/certs /root/ca-root/crl /root/ca-root/private /root/ca-root/requests && touch /root/ca-root/index.txt && echo '1234' >> /root/ca-root/serial
 
 # Certificate Creation/Signing
 COPY . .
-RUN openssl genrsa -aes256 -passout pass:1234 -out /root/ca/private/server.pass.key 4096
-RUN openssl rsa -passin pass:1234 -in /root/ca/private/server.pass.key -out /root/ca/private/server.key
-RUN rm /root/ca/private/server.pass.key
-RUN openssl req -new -key /root/ca/private/server.key -out /root/ca/requests/server.csr \
+
+# Create root private key
+RUN openssl genrsa -aes256 -passout pass:1234 -out /root/ca-root/private/cakey.pem 4096
+
+# Self-sign root certificate
+RUN openssl req -new -x509 -key /root/ca-root/private/cakey.pem -out /root/ca-root/cacert.pem -passin pass:1234 -days 3650 -set_serial 0\
         -subj "/C=AU/ST=NewSouthWales/L=Sydney/O=AlexsCompany/OU=Alex's Department/CN=ca.alexrootdomain.com"
-RUN openssl x509 -req -days 365 -in /root/ca/requests/server.csr -signkey /root/ca/private/server.key -out /root/ca/certs/server.crt
-RUN openssl pkcs12 -export -out /root/ca/newcerts/cert.pfx -inkey /root/ca/private/server.key -in /root/ca/certs/server.crt -certfile /root/ca/certs/server.crt -passout pass:1234
 
 # Allow file access
 RUN chown user -R /root

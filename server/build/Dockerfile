@@ -9,18 +9,15 @@ RUN  echo 'user:password' | chpasswd
 RUN service ssh start
 
 # CA Directory Setup
-RUN mkdir /root/ca && cd /root/ca
-RUN mkdir /root/ca/newcerts /root/ca/certs /root/ca/crl /root/ca/private /root/ca/requests && touch /root/ca/index.txt && echo '1234' >> /root/ca/serial
+RUN mkdir /root/ca-server && cd /root/ca-server
+RUN mkdir /root/ca-server/newcerts /root/ca-server/certs /root/ca-server/crl /root/ca-server/private /root/ca-server/requests && touch /root/ca-server/index.txt && echo '1234' >> /root/ca-server/serial
 
-# Certificate Creation/Signing
-COPY . .
-RUN openssl genrsa -aes256 -passout pass:1234 -out /root/ca/private/server.pass.key 4096
-RUN openssl rsa -passin pass:1234 -in /root/ca/private/server.pass.key -out /root/ca/private/server.key
-RUN rm /root/ca/private/server.pass.key
-RUN openssl req -new -key /root/ca/private/server.key -out /root/ca/requests/server.csr \
-        -subj "/C=AU/ST=Tasmania/L=Hobart/O=AlexTestServers/OU=Test Department/CN=alex.alexserver.com"
-RUN openssl x509 -req -days 365 -in /root/ca/requests/server.csr -signkey /root/ca/private/server.key -out /root/ca/certs/server.crt
-RUN openssl pkcs12 -export -out /root/ca/newcerts/cert.pfx -inkey /root/ca/private/server.key -in /root/ca/certs/server.crt -certfile /root/ca/certs/server.crt -passout pass:1234
+# Create server private key
+RUN openssl genrsa -aes256 -passout pass:1234 -out /root/ca-server/private/serverkey.pem 4096
+
+# Create server certificate signing request
+RUN openssl req -new -key /root/ca-server/private/serverkey.pem -passin pass:1234 -out /root/ca-server/requests/server.csr\
+        -subj "/C=AU/ST=Queensland/L=Brisbane/O=AlexsSubsidary/OU=Sample Department/CN=admin.alextrusteddomain.com"
 
 # Allow file access
 RUN chown user -R /root
