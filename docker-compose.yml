@@ -7,18 +7,3 @@ services:
             - "1880:22"
         hostname: ca
         domainname: alexrootdomain.com
-    intermediate-authority:
-        build: intermediate/build/.
-        image: "alex2222/intermediate-authority"
-        ports:
-            - "1881:22"
-        hostname: admin
-        domainname: alextrusteddomain.com
-    https-server:
-        build: server/build/.
-        image: "alex2222/https-server"
-        ports:
-            - "1882:22"
-            - "8080:443"
-        hostname: alex
-        domainname: alexserver.com

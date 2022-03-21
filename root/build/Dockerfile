@@ -19,7 +19,7 @@ COPY . .
 RUN openssl genrsa -aes256 -passout pass:1234 -out /root/ca-root/private/cakey.pem 4096
 
 # Self-sign root certificate
-RUN openssl req -new -x509 -key /root/ca-root/private/cakey.pem -out /root/ca-root/cacert.pem -passin pass:1234 -days 3650 -set_serial 0\
+RUN openssl req -new -x509 -key /root/ca-root/private/cakey.pem -out /root/ca-root/cacert.cer -passin pass:1234 -days 3650 -set_serial 0\
         -subj "/C=AU/ST=NewSouthWales/L=Sydney/O=AlexsCompany/OU=Alex's Department/CN=ca.alexrootdomain.com"
 
 # Allow file access
